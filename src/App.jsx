@@ -1,21 +1,33 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import TaskInput from "./components/Tasks/TaskInput";
+import TaskList from "./components/Tasks/TaskList";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [tasks, setTasks] = useState([]);
+
+  // add new task
+  const addTask = (text) => {
+    const newTask = {
+      id: Date.now(),
+      text,
+    };
+    setTasks([...tasks, newTask]);
+  };
+
+  // remove task (mark as done)
+  const removeTask = (id) => {
+    const updatedTasks = tasks.filter(task => task.id !== id);
+    setTasks(updatedTasks);
+  };
 
   return (
-    <>
-      <div>
-        Focus To-Do
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div style={{ padding: "16px" }}>
+      <h2>Tasks</h2>
+
+      <TaskInput onAdd={addTask} />
+      <TaskList tasks={tasks} onDone={removeTask} />
+    </div>
+  );
 }
 
-export default App
+export default App;
