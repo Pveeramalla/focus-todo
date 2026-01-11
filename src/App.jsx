@@ -9,18 +9,20 @@ function App() {
     const newTask = {
       id: Date.now(),
       text,
-      time: time || "", // keep empty if not set
+      time,
     };
     setTasks([...tasks, newTask]);
   };
 
+  //remove task
   const removeTask = (id) => {
     setTasks(tasks.filter((task) => task.id !== id));
   };
 
+  //edit task
   const editTask = (id, newText, newTime) => {
     const updatedTasks = tasks.map((task) =>
-      task.id === id ? { ...task, text: newText, time: newTime || "" } : task
+      task.id === id ? { ...task, text: newText, time: newTime } : task
     );
     setTasks(updatedTasks);
   };
@@ -30,7 +32,10 @@ function App() {
       <h2>Tasks</h2>
 
       <TaskInput onAdd={addTask} />
-      <TaskList tasks={tasks} onDone={removeTask} onEdit={editTask} />
+      <TaskList 
+      tasks={tasks}
+      onDone={removeTask} 
+      onEdit={editTask} />
     </div>
   );
 }

@@ -27,7 +27,6 @@ function TaskInput({ onAdd }) {
         type="time"
         value={time}
         onChange={(e) => setTime(e.target.value)}
-        title="Optional time"
       />
 
       <button type="submit">Add</button>
