@@ -1,6 +1,6 @@
 import TaskItem from "./TaskItem";
 
-function TaskList({ tasks, onDone }) {
+function TaskList({ tasks, onDone, onEdit }) {
   if (tasks.length === 0) {
     return <p>No tasks yet</p>;
   }
@@ -12,6 +12,7 @@ function TaskList({ tasks, onDone }) {
           key={task.id}
           task={task}
           onDone={onDone}
+          onEdit={onEdit}
         />
       ))}
     </ul>
