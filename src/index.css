@@ -1,0 +1,21 @@
+:root {
+  --green-primary: #2F7D32;
+  --green-light: #E8F5E9;
+  --green-hover: #256628;
+
+  --white: #FFFFFF;
+  --gray-border: #E0E0E0;
+  --gray-text: #444444;
+  --gray-muted: #777777;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--white);
+  color: var(--gray-text);
+}
