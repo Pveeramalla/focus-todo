@@ -1,13 +1,19 @@
 import { useState, useEffect } from "react";
 
-function FocusTimer() {
-  const FOCUS_TIME = 25 * 60;               
+function FocusTimer({ activeTask }) {
+  /* -------------------- settings -------------------- */
 
-  const [secondsLeft, setSecondsLeft] = useState(FOCUS_TIME); 
-  const [isRunning, setIsRunning] = useState(false);       
+  const [focusMinutes, setFocusMinutes] = useState(25);
+  const [breakMinutes, setBreakMinutes] = useState(5);
 
-  // Timer effect
-  useEffect(() => {                      
+  /* -------------------- timer state -------------------- */
+
+  const [secondsLeft, setSecondsLeft] = useState(25 * 60);
+  const [isRunning, setIsRunning] = useState(false);
+
+  /* -------------------- timer countdown -------------------- */
+
+  useEffect(() => {
     if (!isRunning) return;
 
     const interval = setInterval(() => {
@@ -24,23 +30,85 @@ function FocusTimer() {
     return () => clearInterval(interval);
   }, [isRunning]);
 
-  const startPause = () => {              
-    setIsRunning(!isRunning);
-  };
+  /* -------------------- reset when task changes -------------------- */
 
-  const reset = () => {                  
+  useEffect(() => {
+    if (!activeTask) return;
+
     setIsRunning(false);
-    setSecondsLeft(FOCUS_TIME);
+    setSecondsLeft(focusMinutes * 60);
+  }, [activeTask, focusMinutes]);
+
+  /* -------------------- actions -------------------- */
+
+  const applySettings = () => {
+    setIsRunning(false);
+    setSecondsLeft(focusMinutes * 60);
   };
 
-  // format mm:ss
+  const startPause = () => {
+    setIsRunning((r) => !r);
+  };
+
+  const reset = () => {
+    setIsRunning(false);
+    setSecondsLeft(focusMinutes * 60);
+  };
+
+  /* -------------------- helpers -------------------- */
+
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
 
+  /* -------------------- render -------------------- */
+
   return (
     <div>
-      <h2>Focus Timer</h2>
+      {activeTask ? (
+        <h3>Focusing on: {activeTask.text}</h3>
+      ) : (
+        <h3>No active task</h3>
+      )}
 
+      {/* Settings */}
+      <div
+        style={{
+          display: "flex",
+          gap: "12px",
+          alignItems: "end",
+          margin: "12px 0",
+        }}
+      >
+        <label>
+          Focus (min)
+          <input
+            type="number"
+            min="1"
+            value={focusMinutes}
+            onChange={(e) => setFocusMinutes(Number(e.target.value))}
+            disabled={isRunning}
+            style={{ display: "block" }}
+          />
+        </label>
+
+        <label>
+          Break (min)
+          <input
+            type="number"
+            min="1"
+            value={breakMinutes}
+            onChange={(e) => setBreakMinutes(Number(e.target.value))}
+            disabled={isRunning}
+            style={{ display: "block" }}
+          />
+        </label>
+
+        <button onClick={applySettings} disabled={isRunning}>
+          Apply
+        </button>
+      </div>
+
+      {/* Timer */}
       <h1>
         {minutes}:{seconds.toString().padStart(2, "0")}
       </h1>
@@ -50,6 +118,11 @@ function FocusTimer() {
       </button>
 
       <button onClick={reset}>Reset</button>
+
+      {/* Info */}
+      <p style={{ opacity: 0.7 }}>
+        Break set to: {breakMinutes} min
+      </p>
     </div>
   );
 }

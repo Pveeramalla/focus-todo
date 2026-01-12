@@ -1,49 +1,60 @@
 import { useState, useEffect } from "react";
 
-// shared components
+// shared
 import Tabs from "./components/Tabs";
 
-// tasks feature
+// tasks
 import TaskInput from "./components/Tasks/TaskInput";
 import TaskList from "./components/Tasks/TaskList";
 
-// focus feature
+// focus
 import FocusTimer from "./components/Focus/FocusTimer";
 
 function App() {
-  /* -------------------- state -------------------- */
-
   const [tasks, setTasks] = useState([]);
   const [activeTab, setActiveTab] = useState("TASKS");
+  const [activeTaskId, setActiveTaskId] = useState(null);
 
-  /* -------------------- effects -------------------- */
-
-  // load tasks from storage (once)
+  // load tasks once
   useEffect(() => {
     const savedTasks = localStorage.getItem("tasks");
-    if (savedTasks) {
-      setTasks(JSON.parse(savedTasks));
-    }
+    if (savedTasks) setTasks(JSON.parse(savedTasks));
   }, []);
 
-  // save tasks to storage (on change)
+  // save tasks on change
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(tasks));
   }, [tasks]);
-
-  /* -------------------- task actions -------------------- */
 
   const addTask = ({ text, time }) => {
     const newTask = {
       id: Date.now(),
       text,
       time,
+      status: "TODO",
     };
     setTasks([...tasks, newTask]);
   };
 
-  const removeTask = (id) => {
-    setTasks(tasks.filter((task) => task.id !== id));
+  const updateTaskStatus = (id, status) => {
+    const updatedTasks = tasks.map((task) =>
+      task.id === id ? { ...task, status } : task
+    );
+    setTasks(updatedTasks);
+  };
+
+  // Start from TODO
+  const startTask = (id) => {
+    updateTaskStatus(id, "IN_PROGRESS");
+    setActiveTaskId(id);
+    setActiveTab("FOCUS");
+  };
+
+  // Resume from PENDING (NEW)
+  const resumeTask = (id) => {
+    updateTaskStatus(id, "IN_PROGRESS");
+    setActiveTaskId(id);
+    setActiveTab("FOCUS");
   };
 
   const editTask = (id, newText, newTime) => {
@@ -55,16 +66,11 @@ function App() {
     setTasks(updatedTasks);
   };
 
-  /* -------------------- render -------------------- */
+  const activeTask = tasks.find((task) => task.id === activeTaskId);
 
   return (
     <div style={{ padding: "16px" }}>
-      <h1>App is rendering</h1>
-
-      <Tabs
-        activeTab={activeTab}
-        onChange={setActiveTab}
-      />
+      <Tabs activeTab={activeTab} onChange={setActiveTab} />
 
       {activeTab === "TASKS" && (
         <>
@@ -74,15 +80,15 @@ function App() {
 
           <TaskList
             tasks={tasks}
-            onDone={removeTask}
+            onStart={startTask}
+            onResume={resumeTask}          // NEW
+            onStatusChange={updateTaskStatus}
             onEdit={editTask}
           />
         </>
       )}
 
-      {activeTab === "FOCUS" && (
-        <FocusTimer />
-      )}
+      {activeTab === "FOCUS" && <FocusTimer activeTask={activeTask} />}
     </div>
   );
 }

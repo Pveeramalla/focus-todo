@@ -1,9 +1,7 @@
 import TaskItem from "./TaskItem";
 
-function TaskList({ tasks, onDone, onEdit }) {
-  if (tasks.length === 0) {
-    return <p>No tasks yet</p>;
-  }
+function TaskList({ tasks, onStart, onResume, onStatusChange, onEdit }) {
+  if (tasks.length === 0) return <p>No tasks yet</p>;
 
   return (
     <ul>
@@ -11,7 +9,9 @@ function TaskList({ tasks, onDone, onEdit }) {
         <TaskItem
           key={task.id}
           task={task}
-          onDone={onDone}
+          onStart={onStart}
+          onResume={onResume}            
+          onStatusChange={onStatusChange}
           onEdit={onEdit}
         />
       ))}
