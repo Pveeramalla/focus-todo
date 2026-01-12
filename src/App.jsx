@@ -10,7 +10,7 @@ import DayView from "./components/DayView";
 import TaskList from "./components/Tasks/TaskList";
 
 /* ---------------------------------------------
-   Local date helper (NO UTC, NO timezone bug)
+   Local date helper (NO UTC / NO timezone bug)
 ---------------------------------------------- */
 const getLocalDateString = (date = new Date()) => {
   const year = date.getFullYear();
@@ -27,7 +27,6 @@ function App() {
   const [activeTab, setActiveTab] = useState("TASKS"); // TASKS | FOCUS
   const [isInitialized, setIsInitialized] = useState(false);
   const [selectedTaskIds, setSelectedTaskIds] = useState([]);
-
 
   /* -------------------- LOAD TASKS -------------------- */
 
@@ -56,26 +55,10 @@ function App() {
     return getLocalDateString(d);
   })();
 
-  /* -------------------- TASK HELPERS -------------------- */
+  /* -------------------- FILTER HELPERS -------------------- */
 
-  const tasksByDate = (date) => {
-    return tasks.filter((t) => t.dueDate === date);
-  };
-
-  // ✅ Remove only selected tasks
-const clearSelectedTasks = () => {
-  if (selectedTaskIds.length === 0) return;
-
-  setTasks((prevTasks) =>
-    prevTasks.filter((task) => !selectedTaskIds.includes(task.id))
-  );
-
-  // clear selection after delete
-  setSelectedTaskIds([]);
-};
-
-
-  /* -------------------- WEEK TASKS -------------------- */
+  const tasksByDate = (date) =>
+    tasks.filter((t) => t.dueDate === date);
 
   const weekTasks = () => {
     const start = new Date();
@@ -86,7 +69,6 @@ const clearSelectedTasks = () => {
 
     return tasks.filter((t) => {
       if (!t.dueDate) return false;
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(t.dueDate)) return false;
 
       const [y, m, d] = t.dueDate.split("-").map(Number);
       const taskDate = new Date(y, m - 1, d);
@@ -95,42 +77,63 @@ const clearSelectedTasks = () => {
     });
   };
 
+  /* -------------------- GROUP + SORT WEEK TASKS -------------------- */
+
+  const groupTasksByDate = (tasks) => {
+    const grouped = tasks.reduce((acc, task) => {
+      if (!task.dueDate) return acc;
+
+      if (!acc[task.dueDate]) {
+        acc[task.dueDate] = [];
+      }
+
+      acc[task.dueDate].push(task);
+      return acc;
+    }, {});
+
+    // ✅ SORT dates ASCENDING (earliest → latest)
+    return Object.fromEntries(
+      Object.entries(grouped).sort(
+        ([dateA], [dateB]) =>
+          new Date(dateA) - new Date(dateB)
+      )
+    );
+  };
+
   /* -------------------- TASK ACTIONS -------------------- */
 
   const addTask = ({ text, time, dueDate }) => {
-    const newTask = {
-      id: Date.now(),
-      text,
-      time,
-      dueDate,
-      status: "TODO",
-    };
-    setTasks([...tasks, newTask]);
+    setTasks([
+      ...tasks,
+      {
+        id: Date.now(),
+        text,
+        time,
+        dueDate,
+        status: "TODO",
+      },
+    ]);
   };
 
-  const moveActiveToPending = () => {
-    return tasks.map((task) =>
+  const moveActiveToPending = () =>
+    tasks.map((task) =>
       task.status === "IN_PROGRESS"
         ? { ...task, status: "PENDING" }
         : task
     );
-  };
 
   const startTask = (id) => {
-    const updatedTasks = moveActiveToPending().map((task) =>
-      task.id === id ? { ...task, status: "IN_PROGRESS" } : task
+    setTasks(
+      moveActiveToPending().map((task) =>
+        task.id === id
+          ? { ...task, status: "IN_PROGRESS" }
+          : task
+      )
     );
-    setTasks(updatedTasks);
     setActiveTab("FOCUS");
   };
 
-  const resumeTask = (id) => {
-    const updatedTasks = moveActiveToPending().map((task) =>
-      task.id === id ? { ...task, status: "IN_PROGRESS" } : task
-    );
-    setTasks(updatedTasks);
-    setActiveTab("FOCUS");
-  };
+  const resumeTask = startTask;
 
   const updateTaskStatus = (id, status) => {
     setTasks(
@@ -144,24 +147,42 @@ const clearSelectedTasks = () => {
     setTasks(
       tasks.map((task) =>
         task.id === id
-          ? { ...task, text: newText, time: newTime, dueDate: newDueDate }
+          ? {
+              ...task,
+              text: newText,
+              time: newTime,
+              dueDate: newDueDate,
+            }
           : task
       )
     );
   };
 
-  /* -------------------- ACTIVE TASK -------------------- */
-
-  const activeTask = tasks.find((t) => t.status === "IN_PROGRESS");
+  /* -------------------- SELECTION -------------------- */
 
   const toggleTaskSelection = (id) => {
-  setSelectedTaskIds((prev) =>
-    prev.includes(id)
-      ? prev.filter((taskId) => taskId !== id)
-      : [...prev, id]
-  );
+    setSelectedTaskIds((prev) =>
+      prev.includes(id)
+        ? prev.filter((x) => x !== id)
+        : [...prev, id]
+    );
   };
 
+  const clearSelectedTasks = () => {
+    if (selectedTaskIds.length === 0) return;
+
+    setTasks((prev) =>
+      prev.filter((t) => !selectedTaskIds.includes(t.id))
+    );
+
+    setSelectedTaskIds([]);
+  };
+
+  /* -------------------- ACTIVE TASK -------------------- */
+
+  const activeTask = tasks.find(
+    (t) => t.status === "IN_PROGRESS"
+  );
 
   /* -------------------- RENDER -------------------- */
 
@@ -215,16 +236,42 @@ const clearSelectedTasks = () => {
         {/* THIS WEEK */}
         {activeView === "WEEK" && (
           <>
-            <h2>This Week</h2>
-            <TaskList
-              tasks={weekTasks()}
-              selectedTaskIds={selectedTaskIds}   
-              onToggleSelect={toggleTaskSelection}
-              onStart={startTask}
-              onResume={resumeTask}
-              onStatusChange={updateTaskStatus}
-              onEdit={editTask}
-            />
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "12px",
+              }}
+            >
+              <h2>This Week</h2>
+              <button
+                onClick={clearSelectedTasks}
+                disabled={selectedTaskIds.length === 0}
+              >
+                Clear Selected
+              </button>
+            </div>
+
+            {Object.entries(
+              groupTasksByDate(weekTasks())
+            ).map(([date, tasksForDate]) => (
+              <div key={date} style={{ marginBottom: "24px" }}>
+                <h3 style={{ marginBottom: "8px" }}>
+                  📅 {date}
+                </h3>
+
+                <TaskList
+                  tasks={tasksForDate}
+                  selectedTaskIds={selectedTaskIds}
+                  onToggleSelect={toggleTaskSelection}
+                  onStart={startTask}
+                  onResume={resumeTask}
+                  onStatusChange={updateTaskStatus}
+                  onEdit={editTask}
+                />
+              </div>
+            ))}
           </>
         )}
       </div>
