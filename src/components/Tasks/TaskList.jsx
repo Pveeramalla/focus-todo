@@ -1,20 +1,38 @@
 import TaskItem from "./TaskItem";
 
 function TaskList({
-  tasks = [],                    // ✅ default
-  selectedTaskIds = [],           // ✅ default
-  onToggleSelect = () => {},      // ✅ safe no-op
+  tasks,
+  selectedTaskIds = [],
+  onToggleSelect,
   onStart,
   onResume,
   onStatusChange,
   onEdit,
 }) {
-  if (!tasks.length) {
-    return <p>No tasks yet</p>;
+  if (!tasks || tasks.length === 0) {
+    return <p>No tasks</p>;
   }
 
   return (
-    <ul style={{ listStyle: "none", padding: 0 }}>
+    <div>
+      {/* Header row */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "40px 1fr 140px 120px 160px",
+          fontWeight: "bold",
+          padding: "8px 0",
+          borderBottom: "1px solid #ccc",
+        }}
+      >
+        <div></div>
+        <div>Name</div>
+        <div>Due Date</div>
+        <div>Status</div>
+        <div>Actions</div>
+      </div>
+
+      {/* Task rows */}
       {tasks.map((task) => (
         <TaskItem
           key={task.id}
@@ -27,7 +45,7 @@ function TaskList({
           onEdit={onEdit}
         />
       ))}
-    </ul>
+    </div>
   );
 }
 

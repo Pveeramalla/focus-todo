@@ -187,6 +187,7 @@ const clearSelectedTasks = () => {
             showClearCompleted={true}
             clearSelectedTasks={clearSelectedTasks}
             selectedTaskIds={selectedTaskIds}
+            onToggleSelect={toggleTaskSelection}
           />
         )}
 
@@ -204,7 +205,10 @@ const clearSelectedTasks = () => {
             updateTaskStatus={updateTaskStatus}
             editTask={editTask}
             activeTask={activeTask}
-            showClearCompleted={false}
+            showClearCompleted={true}
+            clearSelectedTasks={clearSelectedTasks}
+            selectedTaskIds={selectedTaskIds}
+            onToggleSelect={toggleTaskSelection}
           />
         )}
 

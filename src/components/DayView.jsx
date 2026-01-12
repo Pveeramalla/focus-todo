@@ -17,6 +17,7 @@ function DayView({
   showClearCompleted,
   clearSelectedTasks,
   selectedTaskIds,
+  onToggleSelect,
 }) {
 
   return (
@@ -46,6 +47,8 @@ function DayView({
 
           <TaskList
             tasks={tasks}
+            selectedTaskIds={selectedTaskIds}
+            onToggleSelect={onToggleSelect}
             onStart={startTask}
             onResume={resumeTask}
             onStatusChange={updateTaskStatus}
