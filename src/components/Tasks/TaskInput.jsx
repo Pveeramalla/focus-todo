@@ -1,85 +1,49 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 
 function TaskInput({ onAdd }) {
   const [text, setText] = useState("");
-  const [dateTime, setDateTime] = useState("");
-
-  const dateRef = useRef(null);
+  const [dueDate, setDueDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!text.trim()) return;
 
-    let dueDate = "";
-    let time = "";
-
-    if (dateTime) {
-      const [d, t] = dateTime.split("T");
-      dueDate = d;
-      time = t || "";
-    }
-
-    onAdd({
-      text: text.trim(),
-      dueDate,
-      time,
-    });
-
+    onAdd({ text: text.trim(), dueDate });
     setText("");
-    setDateTime("");
   };
 
   return (
     <form
       onSubmit={handleSubmit}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
-      }}
+      style={{ display: "flex", gap: "10px" }}
     >
-      {/* Task text */}
       <input
-        type="text"
         placeholder="Add a task..."
         value={text}
         onChange={(e) => setText(e.target.value)}
         style={{
           flex: 1,
-          padding: "8px 10px",
+          padding: "8px",
+          borderRadius: "8px",
+          border: "1px solid #d1d5db",
         }}
       />
 
-      {/* Hidden datetime input */}
+      {/* calendar (icon feel) */}
       <input
-        ref={dateRef}
-        type="datetime-local"
-        value={dateTime}
-        onChange={(e) => setDateTime(e.target.value)}
-        style={{ display: "none" }}
-      />
-
-      {/* Calendar button */}
-      <button
-        type="button"
-        onClick={() => dateRef.current?.showPicker()}
-        title="Pick date & time"
+        type="date"
+        value={dueDate}
+        onChange={(e) => setDueDate(e.target.value)}
         style={{
-          padding: "6px 8px",
+          width: "42px",
+          padding: "6px",
           cursor: "pointer",
         }}
-      >
-        📅
-      </button>
+      />
 
-      {/* Add */}
-      <button
-        type="submit"
-        style={{
-          padding: "8px 14px",
-          fontWeight: "600",
-        }}
-      >
+      <button type="submit" className="btn-primary">
         Add
       </button>
     </form>

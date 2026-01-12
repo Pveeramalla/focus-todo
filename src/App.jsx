@@ -23,32 +23,25 @@ const getLocalDateString = (date = new Date()) => {
 
 function App() {
   /* -------------------- STATE -------------------- */
-
   const [tasks, setTasks] = useState([]);
   const [activeView, setActiveView] = useState("HOME");
   const [activeTab, setActiveTab] = useState("TASKS");
   const [isInitialized, setIsInitialized] = useState(false);
   const [selectedTaskIds, setSelectedTaskIds] = useState([]);
 
-  /* -------------------- LOAD TASKS -------------------- */
-
+  /* -------------------- LOAD / SAVE -------------------- */
   useEffect(() => {
-    const savedTasks = localStorage.getItem("tasks");
-    if (savedTasks) {
-      setTasks(JSON.parse(savedTasks));
-    }
+    const saved = localStorage.getItem("tasks");
+    if (saved) setTasks(JSON.parse(saved));
     setIsInitialized(true);
   }, []);
-
-  /* -------------------- SAVE TASKS -------------------- */
 
   useEffect(() => {
     if (!isInitialized) return;
     localStorage.setItem("tasks", JSON.stringify(tasks));
   }, [tasks, isInitialized]);
 
-  /* -------------------- DATE HELPERS -------------------- */
-
+  /* -------------------- DATES -------------------- */
   const today = getLocalDateString();
 
   const tomorrow = (() => {
@@ -57,8 +50,7 @@ function App() {
     return getLocalDateString(d);
   })();
 
-  /* -------------------- FILTER HELPERS -------------------- */
-
+  /* -------------------- FILTERS -------------------- */
   const tasksByDate = (date) =>
     tasks.filter((t) => t.dueDate === date);
 
@@ -77,28 +69,11 @@ function App() {
     });
   };
 
-  /* -------------------- GROUP + SORT WEEK TASKS -------------------- */
-
-  const groupTasksByDate = (tasks) => {
-    const grouped = tasks.reduce((acc, task) => {
-      if (!task.dueDate) return acc;
-      acc[task.dueDate] = acc[task.dueDate] || [];
-      acc[task.dueDate].push(task);
-      return acc;
-    }, {});
-
-    return Object.fromEntries(
-      Object.entries(grouped).sort(
-        ([a], [b]) => new Date(a) - new Date(b)
-      )
-    );
-  };
-
   /* -------------------- TASK ACTIONS -------------------- */
 
   const addTask = ({ text, time, dueDate }) => {
-    setTasks([
-      ...tasks,
+    setTasks((prev) => [
+      ...prev,
       {
         id: Date.now(),
         text,
@@ -109,33 +84,58 @@ function App() {
     ]);
   };
 
+  // ✅ SINGLE IN_PROGRESS GUARANTEE
   const startTask = (id) => {
-    setTasks(
-      tasks.map((t) =>
-        t.id === id ? { ...t, status: "IN_PROGRESS" } : t
-      )
+    setTasks((prev) =>
+      prev.map((task) => {
+        if (task.status === "IN_PROGRESS" && task.id !== id) {
+          return { ...task, status: "PENDING" };
+        }
+        if (task.id === id) {
+          return { ...task, status: "IN_PROGRESS" };
+        }
+        return task;
+      })
     );
     setActiveTab("FOCUS");
   };
 
+  const resumeTask = startTask;
+
   const updateTaskStatus = (id, status) => {
-    setTasks(
-      tasks.map((t) =>
-        t.id === id ? { ...t, status } : t
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === id ? { ...task, status } : task
       )
     );
   };
 
-  const editTask = (id, newText, newTime, newDueDate) => {
-    setTasks(
-      tasks.map((t) =>
-        t.id === id
-          ? { ...t, text: newText, time: newTime, dueDate: newDueDate }
-          : t
+  const editTask = (id, text, time, dueDate) => {
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === id
+          ? { ...task, text, time, dueDate }
+          : task
       )
     );
   };
 
+  // ✅ DELETE SINGLE TASK
+  const clearTask = (id) => {
+    setTasks((prev) => prev.filter((t) => t.id !== id));
+    setSelectedTaskIds((prev) => prev.filter((x) => x !== id));
+  };
+
+  // ✅ BULK CLEAR
+  const clearSelectedTasks = () => {
+    if (selectedTaskIds.length === 0) return;
+    setTasks((prev) =>
+      prev.filter((t) => !selectedTaskIds.includes(t.id))
+    );
+    setSelectedTaskIds([]);
+  };
+
+  /* -------------------- SELECTION -------------------- */
   const toggleTaskSelection = (id) => {
     setSelectedTaskIds((prev) =>
       prev.includes(id)
@@ -144,124 +144,73 @@ function App() {
     );
   };
 
-  const clearSelectedTasks = () => {
-    setTasks((prev) =>
-      prev.filter((t) => !selectedTaskIds.includes(t.id))
-    );
-    setSelectedTaskIds([]);
-  };
-
   const activeTask = tasks.find(
     (t) => t.status === "IN_PROGRESS"
   );
 
   /* -------------------- RENDER -------------------- */
-
   return (
-    <div
-      style={{
-        display: "flex",
-        background: "#f7f9f8",   // page background
-        minHeight: "100vh",
-      }}
-    >
+    <div style={{ display: "flex" }}>
       <LeftNav activeView={activeView} onChange={setActiveView} />
 
-      {/* MAIN CONTENT AREA */}
-      <div
-        style={{
-          flex: 1,
-          padding: "24px",
-        }}
-      >
-        {/* CARD CONTAINER */}
-        <div
-          style={{
-            background: "#ffffff",
-            borderRadius: "12px",
-            padding: "24px",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-            minHeight: "calc(100vh - 48px)",
-          }}
-        >
-          {/* HOME */}
-          {activeView === "HOME" && (
-            <DayView
-              title="Today"
-              date={today}
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              tasks={tasksByDate(today)}
-              addTask={addTask}
-              startTask={startTask}
-              updateTaskStatus={updateTaskStatus}
-              editTask={editTask}
-              activeTask={activeTask}
-              showClearCompleted={true}
-              clearSelectedTasks={clearSelectedTasks}
+      <div style={{ padding: "16px", flex: 1 }}>
+        {activeView === "HOME" && (
+          <DayView
+            title="Today"
+            date={today}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            tasks={tasksByDate(today)}
+            addTask={addTask}
+            startTask={startTask}
+            resumeTask={resumeTask}
+            updateTaskStatus={updateTaskStatus}
+            editTask={editTask}
+            activeTask={activeTask}
+            showClearCompleted={true}
+            clearSelectedTasks={clearSelectedTasks}
+            selectedTaskIds={selectedTaskIds}
+            onToggleSelect={toggleTaskSelection}
+            onClear={clearTask}
+          />
+        )}
+
+        {activeView === "TOMORROW" && (
+          <DayView
+            title="Tomorrow"
+            date={tomorrow}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            tasks={tasksByDate(tomorrow)}
+            addTask={addTask}
+            startTask={startTask}
+            resumeTask={resumeTask}
+            updateTaskStatus={updateTaskStatus}
+            editTask={editTask}
+            activeTask={activeTask}
+            showClearCompleted={true}
+            clearSelectedTasks={clearSelectedTasks}
+            selectedTaskIds={selectedTaskIds}
+            onToggleSelect={toggleTaskSelection}
+            onClear={clearTask}
+          />
+        )}
+
+        {activeView === "WEEK" && (
+          <>
+            <h2>This Week</h2>
+            <TaskList
+              tasks={weekTasks()}
               selectedTaskIds={selectedTaskIds}
               onToggleSelect={toggleTaskSelection}
+              onStart={startTask}
+              onResume={resumeTask}
+              onStatusChange={updateTaskStatus}
+              onEdit={editTask}
+              onClear={clearTask}
             />
-          )}
-
-          {/* TOMORROW */}
-          {activeView === "TOMORROW" && (
-            <DayView
-              title="Tomorrow"
-              date={tomorrow}
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              tasks={tasksByDate(tomorrow)}
-              addTask={addTask}
-              startTask={startTask}
-              updateTaskStatus={updateTaskStatus}
-              editTask={editTask}
-              activeTask={activeTask}
-              showClearCompleted={true}
-              clearSelectedTasks={clearSelectedTasks}
-              selectedTaskIds={selectedTaskIds}
-              onToggleSelect={toggleTaskSelection}
-            />
-          )}
-
-          {/* THIS WEEK */}
-          {activeView === "WEEK" && (
-            <>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: "16px",
-                }}
-              >
-                <h2>This Week</h2>
-                <button
-                  onClick={clearSelectedTasks}
-                  disabled={selectedTaskIds.length === 0}
-                >
-                  Clear Selected
-                </button>
-              </div>
-
-              {Object.entries(groupTasksByDate(weekTasks())).map(
-                ([date, list]) => (
-                  <div key={date} style={{ marginBottom: "24px" }}>
-                    <h3 style={{ marginBottom: "8px" }}>📅 {date}</h3>
-                    <TaskList
-                      tasks={list}
-                      selectedTaskIds={selectedTaskIds}
-                      onToggleSelect={toggleTaskSelection}
-                      onStart={startTask}
-                      onStatusChange={updateTaskStatus}
-                      onEdit={editTask}
-                    />
-                  </div>
-                )
-              )}
-            </>
-          )}
-        </div>
+          </>
+        )}
       </div>
     </div>
   );
