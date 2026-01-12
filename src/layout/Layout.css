@@ -1,0 +1,49 @@
+/* ===== App Shell ===== */
+.app-shell {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f6f7f9;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont;
+}
+
+/* ===== Header ===== */
+.app-header {
+  height: 56px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.app-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* ===== Body ===== */
+.app-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ===== Left Navigation ===== */
+.left-nav {
+  width: 240px;
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  padding: 12px;
+}
+
+/* ===== Main Content ===== */
+.main-content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}

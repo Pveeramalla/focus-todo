@@ -21,62 +21,109 @@ function DayView({
 }) {
   return (
     <>
-      <h2>{title}</h2>
+      {/* PAGE TITLE */}
+      <h2 style={{ marginBottom: "12px" }}>{title}</h2>
 
-      {/* Tabs */}
-      <div style={{ marginBottom: "12px" }}>
-        <button onClick={() => setActiveTab("TASKS")}>Tasks</button>
-        <button onClick={() => setActiveTab("FOCUS")}>Focus</button>
+      {/* TABS */}
+      <div style={{ marginBottom: "16px" }}>
+        <button
+          onClick={() => setActiveTab("TASKS")}
+          style={{
+            marginRight: "8px",
+            background: activeTab === "TASKS" ? "#eef6f0" : "#fff",
+          }}
+        >
+          Tasks
+        </button>
+        <button
+          onClick={() => setActiveTab("FOCUS")}
+          style={{
+            background: activeTab === "FOCUS" ? "#eef6f0" : "#fff",
+          }}
+        >
+          Focus
+        </button>
       </div>
 
       {/* TASKS TAB */}
       {activeTab === "TASKS" && (
         <>
-          {/* 🔹 TOP TOOLBAR */}
+          {/* 🔹 TOP TOOLBAR (light background) */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
               gap: "12px",
-              marginBottom: "12px",
+              padding: "12px",
+              background: "#f7f9f8",
+              borderRadius: "10px",
+              marginBottom: "16px",
             }}
           >
-            {/* Left: Add Task */}
+            {/* LEFT: ADD TASK INPUT */}
             <div style={{ flex: 1 }}>
               <TaskInput onAdd={addTask} />
             </div>
 
-            {/* Right: Clear Selected */}
+            {/* RIGHT: CLEAR BUTTON */}
             {showClearCompleted && (
               <button
                 onClick={clearSelectedTasks}
                 disabled={selectedTaskIds.length === 0}
                 style={{
+                  height: "36px",
+                  padding: "0 14px",
+                  borderRadius: "8px",
+                  background:
+                    selectedTaskIds.length === 0 ? "#eee" : "#ffffff",
+                  border: "1px solid #ddd",
+                  fontSize: "14px",
+                  cursor:
+                    selectedTaskIds.length === 0
+                      ? "not-allowed"
+                      : "pointer",
                   whiteSpace: "nowrap",
-                  height: "32px",
                 }}
               >
-                Clear
+                Clear Selected
               </button>
             )}
           </div>
 
-          {/* TASK LIST */}
-          <TaskList
-            tasks={tasks}
-            selectedTaskIds={selectedTaskIds}
-            onToggleSelect={onToggleSelect}
-            onStart={startTask}
-            onResume={resumeTask}
-            onStatusChange={updateTaskStatus}
-            onEdit={editTask}
-          />
+          {/* TASK LIST CARD */}
+          <div
+            style={{
+              background: "#ffffff",
+              borderRadius: "10px",
+              border: "1px solid #eee",
+              padding: "8px 12px",
+            }}
+          >
+            <TaskList
+              tasks={tasks}
+              selectedTaskIds={selectedTaskIds}
+              onToggleSelect={onToggleSelect}
+              onStart={startTask}
+              onResume={resumeTask}
+              onStatusChange={updateTaskStatus}
+              onEdit={editTask}
+            />
+          </div>
         </>
       )}
 
       {/* FOCUS TAB */}
       {activeTab === "FOCUS" && (
-        <FocusTimer activeTask={activeTask} />
+        <div
+          style={{
+            background: "#f7f9f8",
+            padding: "16px",
+            borderRadius: "10px",
+            border: "1px solid #eee",
+          }}
+        >
+          <FocusTimer activeTask={activeTask} />
+        </div>
       )}
     </>
   );

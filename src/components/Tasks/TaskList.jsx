@@ -2,7 +2,7 @@ import TaskItem from "./TaskItem";
 
 function TaskList({
   tasks,
-  selectedTaskIds = [],
+  selectedTaskIds,
   onToggleSelect,
   onStart,
   onResume,
@@ -10,42 +10,92 @@ function TaskList({
   onEdit,
 }) {
   if (!tasks || tasks.length === 0) {
-    return <p>No tasks</p>;
+    return (
+      <div style={{ padding: "16px", color: "#888" }}>
+        No tasks yet
+      </div>
+    );
   }
 
   return (
-    <div>
-      {/* Header row */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "40px 1fr 140px 120px 160px",
-          fontWeight: "bold",
-          padding: "8px 0",
-          borderBottom: "1px solid #ccc",
-        }}
-      >
-        <div></div>
-        <div>Name</div>
-        <div>Due Date</div>
-        <div>Status</div>
-        <div>Actions</div>
-      </div>
+    <table
+      style={{
+        width: "100%",
+        borderCollapse: "collapse",
+        fontSize: "14px",
+      }}
+    >
+      {/* TABLE HEADER */}
+      <thead>
+        <tr
+          style={{
+            background: "#f1f4f3",
+            borderBottom: "1px solid #ddd",
+          }}
+        >
+          <th style={{ width: "36px" }}></th>
 
-      {/* Task rows */}
-      {tasks.map((task) => (
-        <TaskItem
-          key={task.id}
-          task={task}
-          isSelected={selectedTaskIds.includes(task.id)}
-          onToggleSelect={onToggleSelect}
-          onStart={onStart}
-          onResume={onResume}
-          onStatusChange={onStatusChange}
-          onEdit={onEdit}
-        />
-      ))}
-    </div>
+          {/* NAME (flexible) */}
+          <th
+            style={{
+              textAlign: "left",
+              padding: "10px 8px",
+            }}
+          >
+            Name
+          </th>
+
+          {/* DUE DATE */}
+          <th
+            style={{
+              width: "140px",
+              textAlign: "right",
+              padding: "10px 8px",
+            }}
+          >
+            Due Date
+          </th>
+
+          {/* STATUS */}
+          <th
+            style={{
+              width: "120px",
+              textAlign: "right",
+              padding: "10px 8px",
+            }}
+          >
+            Status
+          </th>
+
+          {/* ACTIONS */}
+          <th
+            style={{
+              width: "120px",
+              textAlign: "right",
+              padding: "10px 8px",
+            }}
+          >
+            Actions
+          </th>
+        </tr>
+      </thead>
+
+      {/* TABLE BODY */}
+      <tbody>
+        {tasks.map((task) => (
+          <TaskItem
+            key={task.id}
+            task={task}
+            selectedTaskIds={selectedTaskIds}
+            onToggleSelect={onToggleSelect}
+            onStart={onStart}
+            onResume={onResume}
+            onStatusChange={onStatusChange}
+            onEdit={onEdit}
+          />
+        ))}
+      </tbody>
+    </table>
   );
 }
 

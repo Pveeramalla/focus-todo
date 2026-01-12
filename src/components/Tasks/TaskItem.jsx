@@ -1,59 +1,138 @@
-import { useState } from "react";
-
 function TaskItem({
   task,
-  isSelected,
+  selectedTaskIds,
   onToggleSelect,
   onStart,
   onResume,
   onStatusChange,
   onEdit,
 }) {
+  // status pill styles
+  const statusStyle = {
+    TODO: {
+      bg: "#eef2ff",
+      color: "#3730a3",
+    },
+    IN_PROGRESS: {
+      bg: "#e0f2fe",
+      color: "#0369a1",
+    },
+    PENDING: {
+      bg: "#fff7ed",
+      color: "#9a3412",
+    },
+    DONE: {
+      bg: "#eaf7ef",
+      color: "#166534",
+    },
+  };
+
   return (
-    <div
+    <tr
       style={{
-        display: "grid",
-        gridTemplateColumns: "40px 1fr 140px 120px 160px",
-        alignItems: "center",
-        padding: "8px 0",
         borderBottom: "1px solid #eee",
+        background: selectedTaskIds.includes(task.id)
+          ? "#f8fafc"
+          : "transparent",
       }}
+      onMouseEnter={(e) =>
+        (e.currentTarget.style.background = "#f9fafb")
+      }
+      onMouseLeave={(e) =>
+        (e.currentTarget.style.background =
+          selectedTaskIds.includes(task.id)
+            ? "#f8fafc"
+            : "transparent")
+      }
     >
-      {/* Checkbox */}
-      <input
-        type="checkbox"
-        checked={isSelected}
-        onChange={() => onToggleSelect && onToggleSelect(task.id)}
-      />
+      {/* SELECT */}
+      <td style={{ padding: "8px" }}>
+        <input
+          type="checkbox"
+          checked={selectedTaskIds.includes(task.id)}
+          onChange={() => onToggleSelect(task.id)}
+        />
+      </td>
 
-      {/* Name */}
-      <div>{task.text}</div>
+      {/* NAME */}
+      <td
+        style={{
+          padding: "8px",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          maxWidth: "0",
+          fontWeight: 500,
+        }}
+        title={task.text}
+      >
+        {task.text}
+      </td>
 
-      {/* Due date */}
-      <div>{task.dueDate || "-"}</div>
+      {/* DUE DATE */}
+      <td
+        style={{
+          padding: "8px",
+          textAlign: "right",
+          color: "#555",
+          fontSize: "13px",
+        }}
+      >
+        {task.dueDate || "—"}
+      </td>
 
-      {/* Status */}
-      <div>{task.status}</div>
+      {/* STATUS */}
+      <td style={{ padding: "8px", textAlign: "right" }}>
+        <span
+          style={{
+            padding: "4px 10px",
+            borderRadius: "999px",
+            fontSize: "12px",
+            fontWeight: 500,
+            background: statusStyle[task.status]?.bg,
+            color: statusStyle[task.status]?.color,
+          }}
+        >
+          {task.status}
+        </span>
+      </td>
 
-      {/* Actions */}
-      <div style={{ display: "flex", gap: "6px" }}>
-        {task.status === "TODO" && (
-          <button onClick={() => onStart(task.id)}>Start</button>
-        )}
+      {/* ACTIONS */}
+      <td style={{ padding: "8px", textAlign: "right" }}>
+        <select
+          onChange={(e) => {
+            const action = e.target.value;
+            e.target.value = "";
 
-        {task.status === "PENDING" && (
-          <button onClick={() => onResume(task.id)}>Resume</button>
-        )}
+            if (action === "START") onStart(task.id);
+            if (action === "RESUME") onResume(task.id);
+            if (action === "DONE") onStatusChange(task.id, "DONE");
+            if (action === "EDIT") onEdit(task.id);
+          }}
+          style={{
+            padding: "4px 6px",
+            borderRadius: "6px",
+            border: "1px solid #ddd",
+            background: "#fff",
+            fontSize: "13px",
+            cursor: "pointer",
+          }}
+        >
+          <option value="">⋮</option>
 
-        {task.status === "IN_PROGRESS" && (
-          <button onClick={() => onStatusChange(task.id, "DONE")}>
-            Done
-          </button>
-        )}
+          {task.status !== "IN_PROGRESS" && (
+            <option value="START">Start</option>
+          )}
 
-        <button onClick={() => onEdit(task.id)}>Edit</button>
-      </div>
-    </div>
+          {task.status === "PENDING" && (
+            <option value="RESUME">Resume</option>
+          )}
+
+          <option value="DONE">Mark Done</option>
+          <option value="EDIT">Edit</option>
+        </select>
+      </td>
+    </tr>
   );
 }
 
