@@ -21,6 +21,18 @@ const getLocalDateString = (date = new Date()) => {
   return `${year}-${month}-${day}`;
 };
 
+const sortByTime = (tasks) => {
+  return [...tasks].sort((a, b) => {
+    // Tasks without time go last
+    if (!a.time && !b.time) return 0;
+    if (!a.time) return 1;
+    if (!b.time) return -1;
+
+    // Compare HH:mm
+    return a.time.localeCompare(b.time);
+  });
+};
+
 function App() {
   /* -------------------- STATE -------------------- */
   const [tasks, setTasks] = useState([]);
@@ -52,7 +64,7 @@ function App() {
 
   /* -------------------- FILTERS -------------------- */
   const tasksByDate = (date) =>
-    tasks.filter((t) => t.dueDate === date);
+    sortByTime(tasks.filter((t) => t.dueDate === date));
 
   const weekTasks = () => {
     const start = new Date();
@@ -77,8 +89,8 @@ function App() {
       {
         id: Date.now(),
         text,
-        time,
-        dueDate,
+        time: time || null,
+        dueDate: dueDate || null,
         status: "TODO",
       },
     ]);

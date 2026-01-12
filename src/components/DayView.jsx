@@ -15,7 +15,7 @@ function DayView({
   activeTask,
   selectedTaskIds,
   onToggleSelect,
-  onClear, // ✅ ADD THIS
+  onClear,
 }) {
   return (
     <>
@@ -43,16 +43,12 @@ function DayView({
       {/* TASKS */}
       {activeTab === "TASKS" && (
         <>
-          {/* TOOLBAR CARD */}
+          {/* TOOLBAR */}
           <div className="card" style={{ marginBottom: "16px" }}>
-            <div style={{ display: "flex", gap: "12px" }}>
-              <div style={{ flex: 1 }}>
-                <TaskInput onAdd={addTask} />
-              </div>
-            </div>
+            <TaskInput onAdd={addTask} />
           </div>
 
-          {/* TASK LIST CARD */}
+          {/* TASK LIST */}
           <div className="card">
             <TaskList
               tasks={tasks}
@@ -62,7 +58,8 @@ function DayView({
               onResume={resumeTask}
               onStatusChange={updateTaskStatus}
               onEdit={editTask}
-              onClear={onClear} // ✅ PASS IT
+              onClear={onClear}
+              showTime={true}   // ✅ KEY CHANGE
             />
           </div>
         </>

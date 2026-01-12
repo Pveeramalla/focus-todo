@@ -1,49 +1,94 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 function TaskInput({ onAdd }) {
   const [text, setText] = useState("");
-  const [dueDate, setDueDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+
+  // store combined date-time
+  const [dateTime, setDateTime] = useState("");
+
+  // hidden input ref
+  const dateTimeRef = useRef(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!text.trim()) return;
 
-    onAdd({ text: text.trim(), dueDate });
+    let dueDate = null;
+    let time = null;
+
+    if (dateTime) {
+      const d = new Date(dateTime);
+      dueDate = d.toISOString().split("T")[0]; // YYYY-MM-DD
+      time = d.toTimeString().slice(0, 5);     // HH:mm
+    }
+
+    onAdd({
+      text: text.trim(),
+      dueDate, // can be null
+      time,    // can be null
+    });
+
     setText("");
+    setDateTime("");
   };
 
   return (
     <form
       onSubmit={handleSubmit}
-      style={{ display: "flex", gap: "10px" }}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        width: "100%",
+      }}
     >
+      {/* BIG TEXT INPUT */}
       <input
+        type="text"
         placeholder="Add a task..."
         value={text}
         onChange={(e) => setText(e.target.value)}
         style={{
           flex: 1,
-          padding: "8px",
+          height: "36px",
+          padding: "0 12px",
           borderRadius: "8px",
           border: "1px solid #d1d5db",
         }}
       />
 
-      {/* calendar (icon feel) */}
+      {/* HIDDEN DATETIME PICKER */}
       <input
-        type="date"
-        value={dueDate}
-        onChange={(e) => setDueDate(e.target.value)}
-        style={{
-          width: "42px",
-          padding: "6px",
-          cursor: "pointer",
-        }}
+        ref={dateTimeRef}
+        type="datetime-local"
+        value={dateTime}
+        onChange={(e) => setDateTime(e.target.value)}
+        style={{ display: "none" }}
       />
 
-      <button type="submit" className="btn-primary">
+      {/* CALENDAR BUTTON */}
+      <button
+        type="button"
+        onClick={() => dateTimeRef.current?.showPicker()}
+        title="Pick date & time"
+        style={{
+          height: "36px",
+          width: "36px",
+          borderRadius: "8px",
+          border: "1px solid #d1d5db",
+          background: "#fff",
+          cursor: "pointer",
+        }}
+      >
+        📅
+      </button>
+
+      {/* ADD BUTTON */}
+      <button
+        type="submit"
+        className="btn-primary"
+        style={{ height: "36px" }}
+      >
         Add
       </button>
     </form>
