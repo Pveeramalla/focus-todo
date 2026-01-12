@@ -19,7 +19,6 @@ function DayView({
   selectedTaskIds,
   onToggleSelect,
 }) {
-
   return (
     <>
       <h2>{title}</h2>
@@ -33,18 +32,36 @@ function DayView({
       {/* TASKS TAB */}
       {activeTab === "TASKS" && (
         <>
-          <TaskInput onAdd={addTask} />
+          {/* 🔹 TOP TOOLBAR */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              marginBottom: "12px",
+            }}
+          >
+            {/* Left: Add Task */}
+            <div style={{ flex: 1 }}>
+              <TaskInput onAdd={addTask} />
+            </div>
 
-          {showClearCompleted && (
-            <button
-              onClick={clearSelectedTasks}
-              disabled={selectedTaskIds.length === 0}
-              style={{ marginBottom: "8px" }}
-            >
-              Clear Selected
-            </button>
-          )}
+            {/* Right: Clear Selected */}
+            {showClearCompleted && (
+              <button
+                onClick={clearSelectedTasks}
+                disabled={selectedTaskIds.length === 0}
+                style={{
+                  whiteSpace: "nowrap",
+                  height: "32px",
+                }}
+              >
+                Clear
+              </button>
+            )}
+          </div>
 
+          {/* TASK LIST */}
           <TaskList
             tasks={tasks}
             selectedTaskIds={selectedTaskIds}

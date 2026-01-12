@@ -249,7 +249,7 @@ function App() {
                 onClick={clearSelectedTasks}
                 disabled={selectedTaskIds.length === 0}
               >
-                Clear Selected
+                Clear
               </button>
             </div>
 
