@@ -14,7 +14,6 @@ function LeftNav({ activeView, onChange }) {
         background: "#fbfcfb",
       }}
     >
-      <h3 style={{ marginBottom: "16px" }}>📌 Focus</h3>
 
       {items.map((item) => (
         <div
