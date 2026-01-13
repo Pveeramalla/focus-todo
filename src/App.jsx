@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 
 // layout
 import LeftNav from "./components/LeftNav";
+import TopHeader from "./components/TopHeader";
 
 // views
 import DayView from "./components/DayView";
@@ -79,7 +80,6 @@ function App() {
   };
 
   /* -------------------- TASK ACTIONS -------------------- */
-
   const addTask = ({ text, time, dueDate }) => {
     setTasks((prev) => [
       ...prev,
@@ -93,7 +93,6 @@ function App() {
     ]);
   };
 
-  // ✅ SINGLE IN_PROGRESS GUARANTEE
   const startTask = (id) => {
     setTasks((prev) =>
       prev.map((task) => {
@@ -109,50 +108,48 @@ function App() {
     setActiveTab("FOCUS");
   };
 
-  const resumeTask = startTask;
-
   const updateTaskStatus = (id, status) => {
     setTasks((prev) =>
-      prev.map((task) => (task.id === id ? { ...task, status } : task))
+      prev.map((task) =>
+        task.id === id ? { ...task, status } : task
+      )
     );
   };
 
   const editTask = (id, text, time, dueDate) => {
     setTasks((prev) =>
-      prev.map((task) => (task.id === id ? { ...task, text, time, dueDate } : task))
+      prev.map((task) =>
+        task.id === id
+          ? { ...task, text, time, dueDate }
+          : task
+      )
     );
   };
 
-  // ✅ DELETE SINGLE TASK
   const clearTask = (id) => {
     setTasks((prev) => prev.filter((t) => t.id !== id));
     setSelectedTaskIds((prev) => prev.filter((x) => x !== id));
   };
 
-  /* -------------------- SELECTION -------------------- */
   const toggleTaskSelection = (id) => {
     setSelectedTaskIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+      prev.includes(id)
+        ? prev.filter((x) => x !== id)
+        : [...prev, id]
     );
   };
 
-  const activeTask = tasks.find((t) => t.status === "IN_PROGRESS");
+  const activeTask = tasks.find(
+    (t) => t.status === "IN_PROGRESS"
+  );
 
   /* -------------------- RENDER -------------------- */
   return (
     <div className="app-root">
-      {/* ✅ TOP HEADER BAR */}
-      <header className="top-header">
-        <div className="top-header__left">
-          <span className="top-header__pin">📌</span>
-          <span className="top-header__title">Focus</span>
-        </div>
+      {/* ✅ GLOBAL HEADER */}
+      <TopHeader />
 
-        {/* (Optional placeholders for future icons – keep empty for now) */}
-        <div className="top-header__right" />
-      </header>
-
-      {/* ✅ MAIN SHELL */}
+      {/* ✅ MAIN LAYOUT */}
       <div className="app-shell">
         <LeftNav activeView={activeView} onChange={setActiveView} />
 
@@ -160,13 +157,11 @@ function App() {
           {activeView === "HOME" && (
             <DayView
               title="Today"
-              date={today}
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               tasks={tasksByDate(today)}
               addTask={addTask}
               startTask={startTask}
-              resumeTask={resumeTask}
               updateTaskStatus={updateTaskStatus}
               editTask={editTask}
               activeTask={activeTask}
@@ -179,13 +174,11 @@ function App() {
           {activeView === "TOMORROW" && (
             <DayView
               title="Tomorrow"
-              date={tomorrow}
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               tasks={tasksByDate(tomorrow)}
               addTask={addTask}
               startTask={startTask}
-              resumeTask={resumeTask}
               updateTaskStatus={updateTaskStatus}
               editTask={editTask}
               activeTask={activeTask}
@@ -201,7 +194,6 @@ function App() {
                 <h2 style={{ margin: 0 }}>This Week</h2>
               </div>
 
-              {/* keep your current WEEK UI as-is in your repo if already correct */}
               <TaskList
                 tasks={weekTasks()}
                 selectedTaskIds={selectedTaskIds}

@@ -20,7 +20,7 @@ function DayView({
   return (
     <>
       {/* HEADER CARD */}
-      <div className="card" style={{ marginBottom: "16px" }}>
+      <div className="page-title-card" style={{ marginBottom: "12px" }}>
         <h2 style={{ margin: 0 }}>{title}</h2>
       </div>
 
@@ -59,7 +59,7 @@ function DayView({
               onStatusChange={updateTaskStatus}
               onEdit={editTask}
               onClear={onClear}
-              showTime={true}   // ✅ KEY CHANGE
+              showTime={true} // ✅ KEY CHANGE
             />
           </div>
         </>
@@ -67,9 +67,21 @@ function DayView({
 
       {/* FOCUS */}
       {activeTab === "FOCUS" && (
-        <div className="card">
-          <FocusTimer activeTask={activeTask} />
-        </div>
+        <>
+          <div
+            style={{
+              marginBottom: "12px",
+              fontSize: "16px",
+              fontWeight: 600,
+              color: "#374151",
+            }}
+          >
+            Focus
+          </div>
+          <div className="card">
+            <FocusTimer activeTask={activeTask} />
+          </div>
+        </>
       )}
     </>
   );

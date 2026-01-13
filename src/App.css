@@ -46,7 +46,7 @@ body {
 .tabs {
   display: flex;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .tab {
@@ -59,9 +59,9 @@ body {
 }
 
 .tab.active {
-  background: var(--green-soft);
-  border-color: var(--green);
-  color: var(--green);
+  background: #e6f4ea;
+  border-color: #2f7d32;
+  color: #2f7d32;
   font-weight: 600;
 }
 
