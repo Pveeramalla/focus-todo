@@ -2,11 +2,7 @@ import { useRef, useState } from "react";
 
 function TaskInput({ onAdd }) {
   const [text, setText] = useState("");
-
-  // store combined date-time
   const [dateTime, setDateTime] = useState("");
-
-  // hidden input ref
   const dateTimeRef = useRef(null);
 
   const handleSubmit = (e) => {
@@ -18,14 +14,30 @@ function TaskInput({ onAdd }) {
 
     if (dateTime) {
       const d = new Date(dateTime);
-      dueDate = d.toISOString().split("T")[0]; // YYYY-MM-DD
-      time = d.toTimeString().slice(0, 5);     // HH:mm
+
+      // ✅ LOCAL DATE (NO UTC SHIFT)
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      dueDate = `${year}-${month}-${day}`;
+
+      // ✅ LOCAL TIME
+      const hours = String(d.getHours()).padStart(2, "0");
+      const minutes = String(d.getMinutes()).padStart(2, "0");
+      time = `${hours}:${minutes}`;
+      } else {
+  // ✅ DEFAULT TO TODAY
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      dueDate = `${year}-${month}-${day}`;
     }
 
     onAdd({
       text: text.trim(),
-      dueDate, // can be null
-      time,    // can be null
+      dueDate, // null or YYYY-MM-DD (local)
+      time,    // null or HH:mm (local)
     });
 
     setText("");
@@ -42,7 +54,7 @@ function TaskInput({ onAdd }) {
         width: "100%",
       }}
     >
-      {/* BIG TEXT INPUT */}
+      {/* TEXT */}
       <input
         type="text"
         placeholder="Add a task..."
@@ -66,7 +78,7 @@ function TaskInput({ onAdd }) {
         style={{ display: "none" }}
       />
 
-      {/* CALENDAR BUTTON */}
+      {/* CALENDAR ICON */}
       <button
         type="button"
         onClick={() => dateTimeRef.current?.showPicker()}
@@ -83,7 +95,7 @@ function TaskInput({ onAdd }) {
         📅
       </button>
 
-      {/* ADD BUTTON */}
+      {/* ADD */}
       <button
         type="submit"
         className="btn-primary"

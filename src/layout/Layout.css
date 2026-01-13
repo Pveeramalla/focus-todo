@@ -127,3 +127,69 @@
   background: #fff;
   cursor: pointer;
 }
+.focus-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.focus-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.focus-timer {
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: #f0fdf4;
+  border: 8px solid #22c55e;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.focus-time {
+  font-size: 44px;
+  font-weight: 700;
+}
+
+.focus-mode {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.focus-note {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 10px;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  resize: none;
+}
+
+.focus-settings {
+  display: flex;
+  gap: 16px;
+}
+
+.focus-settings label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.focus-settings input {
+  width: 90px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  text-align: center;
+}
+
+.focus-actions {
+  display: flex;
+  gap: 12px;
+}
+

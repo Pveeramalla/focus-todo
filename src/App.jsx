@@ -23,7 +23,7 @@ const getLocalDateString = (date = new Date()) => {
 
 const sortByTime = (tasks) => {
   return [...tasks].sort((a, b) => {
-    // Tasks without time go last
+    // tasks without time go last
     if (!a.time && !b.time) return 0;
     if (!a.time) return 1;
     if (!b.time) return -1;
@@ -125,9 +125,7 @@ function App() {
   const editTask = (id, text, time, dueDate) => {
     setTasks((prev) =>
       prev.map((task) =>
-        task.id === id
-          ? { ...task, text, time, dueDate }
-          : task
+        task.id === id ? { ...task, text, time, dueDate } : task
       )
     );
   };
@@ -150,15 +148,30 @@ function App() {
   /* -------------------- SELECTION -------------------- */
   const toggleTaskSelection = (id) => {
     setSelectedTaskIds((prev) =>
-      prev.includes(id)
-        ? prev.filter((x) => x !== id)
-        : [...prev, id]
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   };
 
-  const activeTask = tasks.find(
-    (t) => t.status === "IN_PROGRESS"
-  );
+  const activeTask = tasks.find((t) => t.status === "IN_PROGRESS");
+
+  /* -------------------- GROUP TASKS BY DATE (WEEK) -------------------- */
+  const groupTasksByDate = (tasksList) => {
+    const grouped = tasksList.reduce((acc, task) => {
+      const date = task.dueDate || "NA";
+      if (!acc[date]) acc[date] = [];
+      acc[date].push(task);
+      return acc;
+    }, {});
+
+    // sort dates ASC (earliest → latest), keep "NA" last
+    return Object.fromEntries(
+      Object.entries(grouped).sort(([a], [b]) => {
+        if (a === "NA") return 1;
+        if (b === "NA") return -1;
+        return new Date(a) - new Date(b);
+      })
+    );
+  };
 
   /* -------------------- RENDER -------------------- */
   return (
@@ -166,6 +179,7 @@ function App() {
       <LeftNav activeView={activeView} onChange={setActiveView} />
 
       <div style={{ padding: "16px", flex: 1 }}>
+        {/* HOME */}
         {activeView === "HOME" && (
           <DayView
             title="Today"
@@ -184,9 +198,11 @@ function App() {
             selectedTaskIds={selectedTaskIds}
             onToggleSelect={toggleTaskSelection}
             onClear={clearTask}
+            showTime={true}
           />
         )}
 
+        {/* TOMORROW */}
         {activeView === "TOMORROW" && (
           <DayView
             title="Tomorrow"
@@ -205,22 +221,42 @@ function App() {
             selectedTaskIds={selectedTaskIds}
             onToggleSelect={toggleTaskSelection}
             onClear={clearTask}
+            showTime={true}
           />
         )}
 
+        {/* THIS WEEK */}
         {activeView === "WEEK" && (
           <>
-            <h2>This Week</h2>
-            <TaskList
-              tasks={weekTasks()}
-              selectedTaskIds={selectedTaskIds}
-              onToggleSelect={toggleTaskSelection}
-              onStart={startTask}
-              onResume={resumeTask}
-              onStatusChange={updateTaskStatus}
-              onEdit={editTask}
-              onClear={clearTask}
-            />
+            <div className="card" style={{ marginBottom: "16px" }}>
+              <h2 style={{ margin: 0 }}>This Week</h2>
+            </div>
+
+            {Object.entries(groupTasksByDate(weekTasks())).map(
+              ([date, taskForDate]) => (
+                <div
+                  key={date}
+                  className="card"
+                  style={{ marginBottom: "16px" }}
+                >
+                  <h4 style={{ margin: "0 0 12px 0" }}>
+                    📅 {date === "NA" ? "No Date" : date}
+                  </h4>
+
+                  <TaskList
+                    tasks={sortByTime(taskForDate)}
+                    selectedTaskIds={selectedTaskIds}
+                    onToggleSelect={toggleTaskSelection}
+                    onStart={startTask}
+                    onResume={resumeTask}
+                    onStatusChange={updateTaskStatus}
+                    onEdit={editTask}
+                    onClear={clearTask}
+                    showTime={false}   // week shows Due Date (not Time)
+                  />
+                </div>
+              )
+            )}
           </>
         )}
       </div>

@@ -35,7 +35,8 @@ function TaskItem({
   };
 
   const saveEdit = () => {
-    onEdit(task.id, editText.trim(), editTime, task.dueDate);
+    if (!editText.trim()) return;
+    onEdit(task.id, editText.trim(), editTime || null, task.dueDate);
     setIsEditing(false);
   };
 
@@ -47,6 +48,7 @@ function TaskItem({
 
   return (
     <tr>
+      {/* Checkbox */}
       <td>
         <input
           type="checkbox"
@@ -55,21 +57,20 @@ function TaskItem({
         />
       </td>
 
-      {/* NAME */}
+      {/* Name */}
       <td>
         {isEditing ? (
           <input
             value={editText}
             onChange={(e) => setEditText(e.target.value)}
             style={{ width: "100%" }}
-            autoFocus
           />
         ) : (
           task.text
         )}
       </td>
 
-      {/* TIME */}
+      {/* Time / Date */}
       <td>
         {isEditing ? (
           <input
@@ -84,6 +85,7 @@ function TaskItem({
               borderRadius: "999px",
               background: "#f1f5f9",
               fontSize: "12px",
+              fontWeight: 500,
             }}
           >
             {showTime ? formatTime(task.time) : task.dueDate || "NA"}
@@ -91,7 +93,7 @@ function TaskItem({
         )}
       </td>
 
-      {/* STATUS */}
+      {/* Status */}
       <td>
         <span
           style={{
@@ -106,64 +108,46 @@ function TaskItem({
         </span>
       </td>
 
-      {/* ACTIONS */}
+      {/* Actions */}
       <td>
         {isEditing ? (
-          <div 
-          style={{
-            display: "flex",
-            gap: "6px",
-            justifyContent: "flex-end",
-          }}>
-            <button
-              onClick={saveEdit}
-               style={{
-                padding: "4px 10px",
-                borderRadius: "6px",
-                border: "none",
-                background: "#2f6f3e",
-                color: "white",
-                fontSize: "12px",
-                cursor: "pointer",
-               }} >
-                Save
-            </button>
-            <button
-            onClick={cancelEdit}
-            style={{
-                padding: "4px 10px",
-                borderRadius: "6px",
-                border: "1px solid #d1d5db",
-                background: "white",
-                color: "#374151",
-                fontSize: "12px",
-                cursor: "pointer",
-            }}
-            >
-                Cancel
-            </button>
+          <div style={{ display: "flex", gap: "6px" }}>
+            <button onClick={saveEdit}>Save</button>
+            <button onClick={cancelEdit}>Cancel</button>
           </div>
         ) : (
           <select
             defaultValue=""
+            style={{
+              width: "40px",
+              height: "28px",
+              borderRadius: "6px",
+              cursor: "pointer",
+            }}
             onChange={(e) => {
               const action = e.target.value;
               e.target.value = "";
 
               if (action === "START") onStart(task.id);
+              if (action === "PENDING") onStatusChange(task.id, "PENDING");
               if (action === "DONE") onStatusChange(task.id, "DONE");
               if (action === "EDIT") setIsEditing(true);
               if (action === "CLEAR") onClear(task.id);
             }}
           >
             <option value="">⋮</option>
-            {task.status !== "IN_PROGRESS" && (
+
+            {(task.status === "TODO" || task.status === "PENDING") && (
               <option value="START">Start</option>
             )}
-            <option value="EDIT">Edit</option>
-            {task.status !== "DONE" && (
-              <option value="DONE">Mark Done</option>
+
+            {task.status === "IN_PROGRESS" && (
+              <option value="PENDING">Pending</option>
             )}
+
+            {task.status !== "DONE" && <option value="DONE">Done</option>}
+
+            <option value="EDIT">Edit</option>
             <option value="CLEAR">Clear</option>
           </select>
         )}
