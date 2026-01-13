@@ -2,8 +2,6 @@ import TaskItem from "./TaskItem";
 
 function TaskList({
   tasks,
-  selectedTaskIds,
-  onToggleSelect,
   onStart,
   onStatusChange,
   onEdit,
@@ -14,23 +12,26 @@ function TaskList({
     <table className="table">
       <thead>
         <tr>
-          <th style={{ width: "40px" }}></th>
+          {/* NUMBER COLUMN */}
+          <th style={{ width: "36px", textAlign: "right" }}>#</th>
+
           <th>Name</th>
+
           <th style={{ width: "120px" }}>
             {showTime ? "Time" : "Due Date"}
           </th>
+
           <th style={{ width: "120px" }}>Status</th>
           <th style={{ width: "120px" }}>Actions</th>
         </tr>
       </thead>
 
       <tbody>
-        {tasks.map((task) => (
+        {tasks.map((task, index) => (
           <TaskItem
             key={task.id}
+            index={index}
             task={task}
-            selectedTaskIds={selectedTaskIds}
-            onToggleSelect={onToggleSelect}
             onStart={onStart}
             onStatusChange={onStatusChange}
             onEdit={onEdit}

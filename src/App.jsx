@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 
 // layout
 import LeftNav from "./components/LeftNav";
-import TopHeader from "./components/TopHeader";
 
 // views
 import DayView from "./components/DayView";
@@ -22,6 +21,9 @@ const getLocalDateString = (date = new Date()) => {
   return `${year}-${month}-${day}`;
 };
 
+/* ---------------------------------------------
+   Sort by time
+---------------------------------------------- */
 const sortByTime = (tasks) => {
   return [...tasks].sort((a, b) => {
     if (!a.time && !b.time) return 0;
@@ -31,13 +33,43 @@ const sortByTime = (tasks) => {
   });
 };
 
+/* ---------------------------------------------
+   Group tasks by date (for WEEK view)
+---------------------------------------------- */
+const groupTasksByDate = (tasks) => {
+  const map = {};
+
+  tasks.forEach((task) => {
+    if (!task.dueDate) return;
+    if (!map[task.dueDate]) {
+      map[task.dueDate] = [];
+    }
+    map[task.dueDate].push(task);
+  });
+
+  return Object.keys(map)
+    .sort()
+    .map((date) => ({
+      date,
+      tasks: map[date],
+    }));
+};
+
+const formatDayLabel = (dateStr) => {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+  });
+};
+
 function App() {
   /* -------------------- STATE -------------------- */
   const [tasks, setTasks] = useState([]);
   const [activeView, setActiveView] = useState("HOME");
   const [activeTab, setActiveTab] = useState("TASKS");
   const [isInitialized, setIsInitialized] = useState(false);
-  const [selectedTaskIds, setSelectedTaskIds] = useState([]);
 
   /* -------------------- LOAD / SAVE -------------------- */
   useEffect(() => {
@@ -128,15 +160,6 @@ function App() {
 
   const clearTask = (id) => {
     setTasks((prev) => prev.filter((t) => t.id !== id));
-    setSelectedTaskIds((prev) => prev.filter((x) => x !== id));
-  };
-
-  const toggleTaskSelection = (id) => {
-    setSelectedTaskIds((prev) =>
-      prev.includes(id)
-        ? prev.filter((x) => x !== id)
-        : [...prev, id]
-    );
   };
 
   const activeTask = tasks.find(
@@ -145,68 +168,73 @@ function App() {
 
   /* -------------------- RENDER -------------------- */
   return (
-    <div className="app-root">
-      {/* ✅ GLOBAL HEADER */}
-      <TopHeader />
+    <div className="app-shell">
+      <LeftNav activeView={activeView} onChange={setActiveView} />
 
-      {/* ✅ MAIN LAYOUT */}
-      <div className="app-shell">
-        <LeftNav activeView={activeView} onChange={setActiveView} />
+      <div className="app-content">
+        {/* TODAY */}
+        {activeView === "HOME" && (
+          <DayView
+            title="Today"
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            tasks={tasksByDate(today)}
+            addTask={addTask}
+            startTask={startTask}
+            resumeTask={startTask}
+            updateTaskStatus={updateTaskStatus}
+            editTask={editTask}
+            activeTask={activeTask}
+            onClear={clearTask}
+          />
+        )}
 
-        <div className="app-content">
-          {activeView === "HOME" && (
-            <DayView
-              title="Today"
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              tasks={tasksByDate(today)}
-              addTask={addTask}
-              startTask={startTask}
-              updateTaskStatus={updateTaskStatus}
-              editTask={editTask}
-              activeTask={activeTask}
-              selectedTaskIds={selectedTaskIds}
-              onToggleSelect={toggleTaskSelection}
-              onClear={clearTask}
-            />
-          )}
+        {/* TOMORROW */}
+        {activeView === "TOMORROW" && (
+          <DayView
+            title="Tomorrow"
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            tasks={tasksByDate(tomorrow)}
+            addTask={addTask}
+            startTask={startTask}
+            resumeTask={startTask}
+            updateTaskStatus={updateTaskStatus}
+            editTask={editTask}
+            activeTask={activeTask}
+            onClear={clearTask}
+          />
+        )}
 
-          {activeView === "TOMORROW" && (
-            <DayView
-              title="Tomorrow"
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              tasks={tasksByDate(tomorrow)}
-              addTask={addTask}
-              startTask={startTask}
-              updateTaskStatus={updateTaskStatus}
-              editTask={editTask}
-              activeTask={activeTask}
-              selectedTaskIds={selectedTaskIds}
-              onToggleSelect={toggleTaskSelection}
-              onClear={clearTask}
-            />
-          )}
+        {/* THIS WEEK (FIXED + GROUPED) */}
+        {activeView === "WEEK" && (
+          <>
+            <div className="card" style={{ marginBottom: "16px" }}>
+              <h2 style={{ margin: 0 }}>This Week</h2>
+            </div>
 
-          {activeView === "WEEK" && (
-            <>
-              <div className="card" style={{ marginBottom: "16px" }}>
-                <h2 style={{ margin: 0 }}>This Week</h2>
+            {groupTasksByDate(weekTasks()).map(({ date, tasks }) => (
+              <div key={date} style={{ marginBottom: "24px" }}>
+                <div style={{ margin: "8px 0 6px", paddingLeft: "6px" }}>
+                  <strong style={{ color: "#374151" }}>
+                    {formatDayLabel(date)}
+                  </strong>
+                </div>
+
+                <div className="card">
+                  <TaskList
+                    tasks={tasks}
+                    onStart={startTask}
+                    onStatusChange={updateTaskStatus}
+                    onEdit={editTask}
+                    onClear={clearTask}
+                    showTime={false}
+                  />
+                </div>
               </div>
-
-              <TaskList
-                tasks={weekTasks()}
-                selectedTaskIds={selectedTaskIds}
-                onToggleSelect={toggleTaskSelection}
-                onStart={startTask}
-                onStatusChange={updateTaskStatus}
-                onEdit={editTask}
-                onClear={clearTask}
-                showTime={false}
-              />
-            </>
-          )}
-        </div>
+            ))}
+          </>
+        )}
       </div>
     </div>
   );

@@ -14,9 +14,8 @@ function formatTime(time) {
 }
 
 function TaskItem({
+  index,
   task,
-  selectedTaskIds,
-  onToggleSelect,
   onStart,
   onStatusChange,
   onEdit,
@@ -26,6 +25,7 @@ function TaskItem({
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(task.text);
   const [editTime, setEditTime] = useState(task.time || "");
+  const [hover, setHover] = useState(false);
 
   const statusStyles = {
     TODO: { background: "#eef2ff", color: "#3730a3" },
@@ -46,19 +46,39 @@ function TaskItem({
     setIsEditing(false);
   };
 
+  /* ROW HIGHLIGHT LOGIC */
+  const rowStyle = {
+    background:
+      task.status === "IN_PROGRESS"
+        ? "#f0fdf4"
+        : hover
+        ? "#f9fafb"
+        : "transparent",
+    transition: "background 0.15s ease",
+  };
+
   return (
-    <tr>
-      {/* Checkbox */}
-      <td>
-        <input
-          type="checkbox"
-          checked={selectedTaskIds.includes(task.id)}
-          onChange={() => onToggleSelect(task.id)}
-        />
+    <tr
+      style={rowStyle}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
+      {/* NUMBER */}
+      <td
+        style={{
+          width: "36px",
+          textAlign: "right",
+          paddingRight: "10px",
+          fontSize: "13px",
+          color: "#9ca3af",
+          borderRight: "1px solid #e5e7eb",
+        }}
+      >
+        {index + 1}
       </td>
 
-      {/* Name */}
-      <td>
+      {/* NAME */}
+      <td style={{ paddingLeft: "12px" }}>
         {isEditing ? (
           <input
             value={editText}
@@ -70,7 +90,7 @@ function TaskItem({
         )}
       </td>
 
-      {/* Time / Date */}
+      {/* TIME / DATE */}
       <td>
         {isEditing ? (
           <input
@@ -93,7 +113,7 @@ function TaskItem({
         )}
       </td>
 
-      {/* Status */}
+      {/* STATUS */}
       <td>
         <span
           style={{
@@ -108,7 +128,7 @@ function TaskItem({
         </span>
       </td>
 
-      {/* Actions */}
+      {/* ACTIONS */}
       <td>
         {isEditing ? (
           <div style={{ display: "flex", gap: "6px" }}>
