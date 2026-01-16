@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 
 // layout
 import LeftNav from "./components/LeftNav";
+import TopHeader from "./components/TopHeader";
 
 // views
 import DayView from "./components/DayView";
@@ -12,7 +13,7 @@ import TaskList from "./components/Tasks/TaskList";
 import "./layout/Layout.css";
 
 /* ---------------------------------------------
-   Local date helper (NO UTC / NO timezone bug)
+   Local date helper
 ---------------------------------------------- */
 const getLocalDateString = (date = new Date()) => {
   const year = date.getFullYear();
@@ -21,9 +22,6 @@ const getLocalDateString = (date = new Date()) => {
   return `${year}-${month}-${day}`;
 };
 
-/* ---------------------------------------------
-   Sort by time
----------------------------------------------- */
 const sortByTime = (tasks) => {
   return [...tasks].sort((a, b) => {
     if (!a.time && !b.time) return 0;
@@ -33,26 +31,17 @@ const sortByTime = (tasks) => {
   });
 };
 
-/* ---------------------------------------------
-   Group tasks by date (for WEEK view)
----------------------------------------------- */
 const groupTasksByDate = (tasks) => {
   const map = {};
-
   tasks.forEach((task) => {
     if (!task.dueDate) return;
-    if (!map[task.dueDate]) {
-      map[task.dueDate] = [];
-    }
+    if (!map[task.dueDate]) map[task.dueDate] = [];
     map[task.dueDate].push(task);
   });
 
   return Object.keys(map)
     .sort()
-    .map((date) => ({
-      date,
-      tasks: map[date],
-    }));
+    .map((date) => ({ date, tasks: map[date] }));
 };
 
 const formatDayLabel = (dateStr) => {
@@ -65,13 +54,11 @@ const formatDayLabel = (dateStr) => {
 };
 
 function App() {
-  /* -------------------- STATE -------------------- */
   const [tasks, setTasks] = useState([]);
   const [activeView, setActiveView] = useState("HOME");
   const [activeTab, setActiveTab] = useState("TASKS");
   const [isInitialized, setIsInitialized] = useState(false);
 
-  /* -------------------- LOAD / SAVE -------------------- */
   useEffect(() => {
     const saved = localStorage.getItem("tasks");
     if (saved) setTasks(JSON.parse(saved));
@@ -83,23 +70,19 @@ function App() {
     localStorage.setItem("tasks", JSON.stringify(tasks));
   }, [tasks, isInitialized]);
 
-  /* -------------------- DATES -------------------- */
   const today = getLocalDateString();
-
   const tomorrow = (() => {
     const d = new Date();
     d.setDate(d.getDate() + 1);
     return getLocalDateString(d);
   })();
 
-  /* -------------------- FILTERS -------------------- */
   const tasksByDate = (date) =>
     sortByTime(tasks.filter((t) => t.dueDate === date));
 
   const weekTasks = () => {
     const start = new Date();
     start.setHours(0, 0, 0, 0);
-
     const end = new Date(start);
     end.setDate(start.getDate() + 7);
 
@@ -111,7 +94,6 @@ function App() {
     });
   };
 
-  /* -------------------- TASK ACTIONS -------------------- */
   const addTask = ({ text, time, dueDate }) => {
     setTasks((prev) => [
       ...prev,
@@ -151,9 +133,7 @@ function App() {
   const editTask = (id, text, time, dueDate) => {
     setTasks((prev) =>
       prev.map((task) =>
-        task.id === id
-          ? { ...task, text, time, dueDate }
-          : task
+        task.id === id ? { ...task, text, time, dueDate } : task
       )
     );
   };
@@ -162,79 +142,74 @@ function App() {
     setTasks((prev) => prev.filter((t) => t.id !== id));
   };
 
-  const activeTask = tasks.find(
-    (t) => t.status === "IN_PROGRESS"
-  );
+  const activeTask = tasks.find((t) => t.status === "IN_PROGRESS");
 
-  /* -------------------- RENDER -------------------- */
   return (
-    <div className="app-shell">
-      <LeftNav activeView={activeView} onChange={setActiveView} />
+    <div className="app-root">
+      {/* ✅ FIXED HEADER */}
+      <TopHeader />
 
-      <div className="app-content">
-        {/* TODAY */}
-        {activeView === "HOME" && (
-          <DayView
-            title="Today"
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            tasks={tasksByDate(today)}
-            addTask={addTask}
-            startTask={startTask}
-            resumeTask={startTask}
-            updateTaskStatus={updateTaskStatus}
-            editTask={editTask}
-            activeTask={activeTask}
-            onClear={clearTask}
-          />
-        )}
+      {/* ✅ MAIN LAYOUT */}
+      <div className="app-shell">
+        <LeftNav activeView={activeView} onChange={setActiveView} />
 
-        {/* TOMORROW */}
-        {activeView === "TOMORROW" && (
-          <DayView
-            title="Tomorrow"
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            tasks={tasksByDate(tomorrow)}
-            addTask={addTask}
-            startTask={startTask}
-            resumeTask={startTask}
-            updateTaskStatus={updateTaskStatus}
-            editTask={editTask}
-            activeTask={activeTask}
-            onClear={clearTask}
-          />
-        )}
+        <div className="app-content">
+          {activeView === "HOME" && (
+            <DayView
+              title="Today"
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              tasks={tasksByDate(today)}
+              addTask={addTask}
+              startTask={startTask}
+              resumeTask={startTask}
+              updateTaskStatus={updateTaskStatus}
+              editTask={editTask}
+              activeTask={activeTask}
+              onClear={clearTask}
+            />
+          )}
 
-        {/* THIS WEEK (FIXED + GROUPED) */}
-        {activeView === "WEEK" && (
-          <>
-            <div className="card" style={{ marginBottom: "16px" }}>
-              <h2 style={{ margin: 0 }}>This Week</h2>
-            </div>
+          {activeView === "TOMORROW" && (
+            <DayView
+              title="Tomorrow"
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              tasks={tasksByDate(tomorrow)}
+              addTask={addTask}
+              startTask={startTask}
+              resumeTask={startTask}
+              updateTaskStatus={updateTaskStatus}
+              editTask={editTask}
+              activeTask={activeTask}
+              onClear={clearTask}
+            />
+          )}
 
-            {groupTasksByDate(weekTasks()).map(({ date, tasks }) => (
-              <div key={date} style={{ marginBottom: "24px" }}>
-                <div style={{ margin: "8px 0 6px", paddingLeft: "6px" }}>
-                  <strong style={{ color: "#374151" }}>
-                    {formatDayLabel(date)}
-                  </strong>
-                </div>
-
-                <div className="card">
-                  <TaskList
-                    tasks={tasks}
-                    onStart={startTask}
-                    onStatusChange={updateTaskStatus}
-                    onEdit={editTask}
-                    onClear={clearTask}
-                    showTime={false}
-                  />
-                </div>
+          {activeView === "WEEK" && (
+            <>
+              <div className="card" style={{ marginBottom: "16px" }}>
+                <h2 style={{ margin: 0 }}>This Week</h2>
               </div>
-            ))}
-          </>
-        )}
+
+              {groupTasksByDate(weekTasks()).map(({ date, tasks }) => (
+                <div key={date} style={{ marginBottom: "24px" }}>
+                  <strong>{formatDayLabel(date)}</strong>
+                  <div className="card">
+                    <TaskList
+                      tasks={tasks}
+                      onStart={startTask}
+                      onStatusChange={updateTaskStatus}
+                      onEdit={editTask}
+                      onClear={clearTask}
+                      showTime={false}
+                    />
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
